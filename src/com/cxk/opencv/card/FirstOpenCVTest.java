@@ -1,8 +1,10 @@
 package com.cxk.opencv.card;
 import org.opencv.core.*;  
 import org.opencv.imgcodecs.Imgcodecs;  
-import org.opencv.imgproc.Imgproc;  
-  
+import org.opencv.imgproc.Imgproc;
+
+import com.cxk.opencv.util.ImageUtil;
+
 import javax.imageio.ImageIO;  
 import java.awt.image.BufferedImage;  
 import java.awt.image.DataBufferByte;  
@@ -26,7 +28,7 @@ public class FirstOpenCVTest {
          * 1. 读取原始图像转换为OpenCV的Mat数据格式  
          */  
   
-        Mat srcMat = Imgcodecs.imread("E:\\img\\phone.jpg");  //原始图像  
+        Mat srcMat = Imgcodecs.imread("E:\\img\\1.jpg");  //原始图像  
   
   
         /**  
@@ -35,34 +37,24 @@ public class FirstOpenCVTest {
         Mat grayMat = new Mat(); //灰度图像  
         Imgproc.cvtColor(srcMat, grayMat, Imgproc.COLOR_RGB2GRAY);  
   
-        BufferedImage grayImage =  toBufferedImage(grayMat);  
+        BufferedImage grayImage =  ImageUtil.toBufferedImage(grayMat);  
   
-        saveJpgImage(grayImage,"E:/grayImage.jpg");  
+        ImageUtil.saveJpgImage(grayImage,"E:/grayImage.jpg");  
   
         System.out.println("保存灰度图像！");  
   
+        
         /**  
          * 3、对灰度图像进行二值化处理  
          */  
         Mat binaryMat = new Mat(grayMat.height(),grayMat.width(),CvType.CV_8UC1);  
         Imgproc.threshold(grayMat, binaryMat, 150, 500, Imgproc.THRESH_BINARY);  
-        BufferedImage binaryImage =  toBufferedImage(binaryMat);  
-        saveJpgImage(binaryImage,"E:/binaryImage.jpg");  
+        BufferedImage binaryImage =  ImageUtil.toBufferedImage(binaryMat);  
+        ImageUtil.saveJpgImage(binaryImage,"E:/binaryImage.jpg");  
         System.out.println("保存二值化图像！");  
   
-//        for (int y = 0; y < binaryMat.height(); y++)//行  
-//        {  
-//            for (int x = 0; x < binaryMat.width(); x++) //列  
-//            {  
-//                //得到该行像素点的值  
-//                byte[] data = new byte[1];  
-//                binaryMat.get(y, x, data);  
-//                
-//                System.out.print("  "+data[0]);
-//                
-//            } 
-//            System.out.println("");
-//        }
+        ImageUtil.cutImage(binaryMat);
+        
   
         /**  
          * 4、图像腐蚀---腐蚀后变得更加宽,粗.便于识别--使用3*3的图片去腐蚀  
@@ -70,11 +62,11 @@ public class FirstOpenCVTest {
         Mat destMat = new Mat(); //腐蚀后的图像  
         Mat element = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(3, 3));  
         Imgproc.erode(binaryMat,destMat,element);  
-        BufferedImage destImage =  toBufferedImage(destMat);  
-        saveJpgImage(destImage,"E:/destImage.jpg");  
+        BufferedImage destImage =  ImageUtil.toBufferedImage(destMat);  
+        ImageUtil.saveJpgImage(destImage,"E:/destImage.jpg");  
         System.out.println("保存腐蚀化后图像！");  
   
-  
+        
         /**  
          * 5 图片切割  
          */  
@@ -102,22 +94,6 @@ public class FirstOpenCVTest {
                 }
                 
             }  
-//            if (state == 0)//还未到有效行  
-//            {  
-//                if (count >= 150)//找到了有效行  
-//                {//有效行允许十个像素点的噪声  
-//                    a = y;  
-//                    state = 1;  
-//                }  
-//            }  
-//            else if (state == 1)  
-//            {  
-//                if (count <= 150)//找到了有效行  
-//                {//有效行允许十个像素点的噪声  
-//                    b = y;  
-//                    state = 2;  
-//                }  
-//            }  
         }  
         System.out.println("过滤下界"+Integer.toString(a));  
         System.out.println("过滤上界"+Integer.toString(b));  
@@ -126,8 +102,8 @@ public class FirstOpenCVTest {
         //参数,坐标X,坐标Y,截图宽度,截图长度  
         Rect rect = new Rect(0,a,destMat.width(),b - a);  
         Mat resMat = new Mat(destMat,rect);  
-        BufferedImage resImage =  toBufferedImage(resMat);  
-        saveJpgImage(resImage,"E:/resImage.jpg");  
+        BufferedImage resImage =  ImageUtil.toBufferedImage(resMat);  
+        ImageUtil.saveJpgImage(resImage,"E:/resImage.jpg");  
         System.out.println("保存切割后图像！");  
   
   
@@ -142,49 +118,24 @@ public class FirstOpenCVTest {
         } 
   
         try {  
-            String result =  TesseractOCRUtil.recognizeText(new File("E:/resImage.jpg"));  
+            String result =  TesseractOCRUtil.recognizeText(new File("E:/13.jpg"));  
             System.out.println(result);  
         } catch (Exception e) {  
             e.printStackTrace();  
         }  
   
-    }  
+    }
+
+
+
+	
   
   
   
-    /**  
-     * 将Mat图像格式转化为 BufferedImage  
-     * @param matrix  mat数据图像  
-     * @return BufferedImage  
-     */  
-    private static BufferedImage toBufferedImage(Mat matrix) {  
-        int type = BufferedImage.TYPE_BYTE_GRAY;  
-        if (matrix.channels() > 1) {  
-            type = BufferedImage.TYPE_3BYTE_BGR;  
-        }  
-        int bufferSize = matrix.channels() * matrix.cols() * matrix.rows();  
-        byte[] buffer = new byte[bufferSize];  
-        matrix.get(0, 0, buffer); // 获取所有的像素点  
-        BufferedImage image = new BufferedImage(matrix.cols(), matrix.rows(), type);  
-        final byte[] targetPixels = ((DataBufferByte)image.getRaster().getDataBuffer()).getData();  
-        System.arraycopy(buffer, 0, targetPixels, 0, buffer.length);  
-        return image;  
-    }  
   
   
-    /**  
-     * 将BufferedImage内存图像保存为图像文件  
-     * @param image BufferedImage  
-     * @param filePath  文件名  
-     */  
-    private static void saveJpgImage(BufferedImage image, String filePath) {  
   
-        try {  
-            ImageIO.write(image, "jpg", new File(filePath));  
-        } catch (Exception e) {  
-            throw new RuntimeException(e);  
-        }  
-    }  
+    
   
   
   
