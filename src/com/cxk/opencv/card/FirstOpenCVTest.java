@@ -1,15 +1,20 @@
 package com.cxk.opencv.card;
-import org.opencv.core.*;  
-import org.opencv.imgcodecs.Imgcodecs;  
+import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+
+import org.opencv.core.Core;
+import org.opencv.core.CvType;
+import org.opencv.core.Mat;
+import org.opencv.core.Rect;
+import org.opencv.core.Size;
+import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
 import com.cxk.opencv.util.ImageUtil;
-
-import javax.imageio.ImageIO;  
-import java.awt.image.BufferedImage;  
-import java.awt.image.DataBufferByte;  
-import java.io.File;  
-import java.io.IOException;  
+import com.cxk.opencv.util.OCR;
   
 /**  
  * Created by zhangwenchao on 2017/9/27.  
@@ -28,7 +33,7 @@ public class FirstOpenCVTest {
          * 1. 读取原始图像转换为OpenCV的Mat数据格式  
          */  
   
-        Mat srcMat = Imgcodecs.imread("E:\\img\\1.jpg");  //原始图像  
+        Mat srcMat = Imgcodecs.imread("E:\\img\\6_tmp.jpg");  //原始图像  
   
   
         /**  
@@ -112,13 +117,16 @@ public class FirstOpenCVTest {
          */  
         try {  
             Process  pro = Runtime.getRuntime().exec(new String[]{"D:/Program Files (x86)/Tesseract-OCR/tesseract.exe", "E:/resImage.jpg","E:/result"});  
+            String s;
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(pro.getInputStream()));
+            while((s=bufferedReader.readLine()) != null);
             pro.waitFor();  
         } catch (IOException e) {  
             e.printStackTrace();  
         } 
   
         try {  
-            String result =  TesseractOCRUtil.recognizeText(new File("E:/13.jpg"));  
+            String result =  OCR.recognizeText(new File("E:/resImage.jpg"));  
             System.out.println(result);  
         } catch (Exception e) {  
             e.printStackTrace();  

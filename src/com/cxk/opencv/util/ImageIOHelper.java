@@ -1,4 +1,4 @@
-package com.cxk.opencv.text;  
+package com.cxk.opencv.util;  
   
   
 import java.awt.image.BufferedImage;    
@@ -7,6 +7,9 @@ import java.io.IOException;
 import java.util.Iterator;    
 import java.util.Locale;    
   
+
+
+
 import javax.imageio.IIOImage;    
 import javax.imageio.ImageIO;    
 import javax.imageio.ImageReader;    
@@ -16,6 +19,9 @@ import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.stream.ImageInputStream;    
 import javax.imageio.stream.ImageOutputStream;    
   
+
+
+
 import com.sun.media.imageio.plugins.tiff.TIFFImageWriteParam;   
   
 public class ImageIOHelper {    
@@ -62,9 +68,10 @@ public class ImageIOHelper {
     }    
   
     private static File tempImageFile(File imageFile) {    
-        String path = imageFile.getPath();    
-        StringBuffer strB = new StringBuffer(path);    
-        strB.insert(path.lastIndexOf('.'),0);    
-        return new File(strB.toString().replaceFirst("(?<=//.)(//w+)$", "tif"));    
+    	String parent = imageFile.getParent();
+        
+    	 String fileName = imageFile.getName().substring(0,imageFile.getName().lastIndexOf("."));
+        
+        return new File(parent+"\\"+fileName+".tif");    
     }    
 }  

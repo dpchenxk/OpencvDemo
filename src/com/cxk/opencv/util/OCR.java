@@ -1,4 +1,4 @@
-package com.cxk.opencv.text;  
+package com.cxk.opencv.util;  
   
 import java.io.BufferedReader;    
 import java.io.File;    
@@ -7,11 +7,14 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;    
 import java.util.List;    
     
+
+
+
 import org.jdesktop.swingx.util.OS;    
     
 public class OCR {    
     private final String LANG_OPTION = "-l";  //英文字母小写l，并非数字1    
-    private final String EOL = System.getProperty("line.separator");    
+    private final static String EOL = System.getProperty("line.separator");    
     private String tessPath = "D://Program Files (x86)//Tesseract-OCR";//tesseract-ocr安装地址    
     //private String tessPath = new File("tesseract").getAbsolutePath();    
         
@@ -71,9 +74,82 @@ public class OCR {
                     msg = "Errors occurred.";    
             }    
             tempImage.delete();    
-            //throw new RuntimeException(msg);    
+            throw new RuntimeException(msg);    
         }    
         new File(outputFile.getAbsolutePath()+".txt").delete();    
         return strB.toString();    
-    }    
+    }  
+    
+    
+    /**  
+     * @param imageFile  
+     *            传入的图像文件  
+     * @return 识别后的字符串  
+     */  
+    public static String recognizeText(File imageFile) throws Exception {  
+        /**  
+         * 设置输出文件的保存的文件目录  
+         */  
+        File outputFile = new File(imageFile.getParentFile(), "output");  
+  
+        StringBuffer strB = new StringBuffer();  
+  
+        Process  pro = Runtime.getRuntime().exec(  
+                         new String[]{  
+                            "D:/Program Files (x86)/Tesseract-OCR/tesseract.exe",  
+                            imageFile.getPath(),  
+                            outputFile.getPath()}  
+                         );  
+       int w = pro.waitFor();  
+        if (w == 0) // 0代表正常退出  
+        {  
+            BufferedReader in = new BufferedReader(new InputStreamReader(  
+                    new FileInputStream(outputFile.getAbsolutePath() + ".txt"),  
+                    "UTF-8"));  
+            String str;  
+  
+            while ((str = in.readLine()) != null)  
+            {  
+                strB.append(str).append(EOL);  
+            }  
+            in.close();  
+        } else  
+        {  
+            String msg;  
+            switch (w)  
+            {  
+                case 1:  
+                    msg = "Errors accessing files. There may be spaces in your image's filename.";  
+                    break;  
+                case 29:  
+                    msg = "Cannot recognize the image or its selected region.";  
+                    break;  
+                case 31:  
+                    msg = "Unsupported image format.";  
+                    break;  
+                default:  
+                    msg = "Errors occurred.";  
+            }  
+            throw new RuntimeException(msg);  
+        }  
+        new File(outputFile.getAbsolutePath() + ".txt").delete();  
+        return strB.toString().replaceAll("\\s*", "");  
+  
+  
+  
+    }  
+  
+  
+    public static void main(String[] args) {  
+  
+  
+        try {  
+            String result =  recognizeText(new File("E:/resImage.jpg"));  
+            System.out.println(result);  
+        } catch (Exception e) {  
+            e.printStackTrace();  
+        }  
+  
+  
+    }  
 }    
