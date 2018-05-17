@@ -117,9 +117,6 @@ public class FirstOpenCVTest {
          */  
         try {  
             Process  pro = Runtime.getRuntime().exec(new String[]{"D:/Program Files (x86)/Tesseract-OCR/tesseract.exe", "E:/resImage.jpg","E:/result"});  
-            String s;
-            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(pro.getInputStream()));
-            while((s=bufferedReader.readLine()) != null);
             pro.waitFor();  
         } catch (IOException e) {  
             e.printStackTrace();  
